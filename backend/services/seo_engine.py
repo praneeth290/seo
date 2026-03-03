@@ -217,21 +217,27 @@ def analyze_seo(html: str, keyword: str = "", source_url: str = "") -> dict:
     # ── Overall Score ─────────────────────────────────────────────────────────
     
 
+    # Keyword counts 3x in the overall score
     scores = []
     for key, v in checks.items():
         if v.get("score") is not None:
             scores.append(v["score"])
             if key == "keyword":
-                scores.append(v["score"])  # keyword added twice = double weight
+                scores.append(v["score"])
+                scores.append(v["score"])  # keyword added 3 times = triple weight
     overall = round(sum(scores) / len(scores)) if scores else 0
-    grade   = next(g for g, t in [("A",90),("B",80),("C",70),("D",60),("F",0)] if overall >= t)
+
+    # If keyword not found at all, cap the overall score at 50
+    kw_check = checks.get("keyword", {})
+    if kw_check.get("score") == 0 and kw_check.get("count", 0) < 3:
+        overall = min(overall, 50)
 
     return {
         "url": source_url or None,
         "keyword": keyword or None,
         "analyzed_at": datetime.now(timezone.utc).isoformat(),
         "overall_score": overall,
-        "grade": grade,
+        # "grade": grade,
         "checks": checks,
     }
 
