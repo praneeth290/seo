@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import textstat
 import re
 from datetime import datetime, timezone
 import math
