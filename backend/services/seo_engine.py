@@ -92,7 +92,7 @@ def analyze_seo(html: str, keyword: str = "", source_url: str = "") -> dict:
             "in_h1": any(kw in h.lower() for h in h1s),
             "in_first_paragraph": kw in fp.get_text().lower() if fp else False,
             "passed": passed,
-            "score": 100 if passed else (40 if density < KW_MIN else 60),
+            "score": 100 if passed else (0 if count == 0 else (40 if density < KW_MIN else 60)),
             "recommendation": (
                 f'Keyword "{keyword}" not found. Add it naturally.' if not count
                 else f"Density too low ({density}%). Aim for {KW_MIN}–{KW_MAX}%." if density < KW_MIN
