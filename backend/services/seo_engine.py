@@ -215,7 +215,14 @@ def analyze_seo(html: str, keyword: str = "", source_url: str = "") -> dict:
     }
 
     # ── Overall Score ─────────────────────────────────────────────────────────
-    scores  = [v["score"] for v in checks.values() if v.get("score") is not None]
+    
+
+    scores = []
+    for key, v in checks.items():
+        if v.get("score") is not None:
+            scores.append(v["score"])
+            if key == "keyword":
+                scores.append(v["score"])  # keyword added twice = double weight
     overall = round(sum(scores) / len(scores)) if scores else 0
     grade   = next(g for g, t in [("A",90),("B",80),("C",70),("D",60),("F",0)] if overall >= t)
 

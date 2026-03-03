@@ -115,7 +115,7 @@ export default function AnalysisReport({ analysis, onUpdate }) {
           ))}
         </div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>
-          {CHECK_ORDER.filter(k => checks[k]?.score != null).length} checks · Python + BeautifulSoup4 + textstat
+          {CHECK_ORDER.filter(k => checks[k]?.score != null).length} checks · Python + BeautifulSoup4 + Pure Python
         </div>
       </div>
 
