@@ -90,7 +90,7 @@ def analyze_seo(html: str, keyword: str = "", source_url: str = "") -> dict:
         in_first  = kw in fp.get_text().lower() if fp else False
 
         # Score based on density + placement
-        if count == 0:
+        if count < 3:
             kw_score = 0
         elif passed:
             # Bonus points for keyword placement
@@ -111,7 +111,7 @@ def analyze_seo(html: str, keyword: str = "", source_url: str = "") -> dict:
             "passed": passed,
             "score": kw_score,
             "recommendation": (
-                f'Keyword "{keyword}" not found on this page.' if not count
+                f'Keyword "{keyword}" not found on this page.' if count < 3
                 else f"Density too low ({density}%). Aim for {KW_MIN}–{KW_MAX}%." if density < KW_MIN
                 else f"Density too high ({density}%). Reduce to avoid over-optimization." if density > KW_MAX
                 else f"Keyword density is ideal at {density}%. Found in: " + ", ".join(
