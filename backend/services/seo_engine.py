@@ -84,27 +84,46 @@ def analyze_seo(html: str, keyword: str = "", source_url: str = "") -> dict:
         density = round(count / total_w * 100, 2) if total_w else 0
         fp      = soup.find("p")
         passed  = KW_MIN <= density <= KW_MAX
+
+        in_title  = kw in text.lower()
+        in_h1     = any(kw in h.lower() for h in h1s)
+        in_first  = kw in fp.get_text().lower() if fp else False
+
+        # Score based on density + placement
+        if count == 0:
+            kw_score = 0
+        elif passed:
+            # Bonus points for keyword placement
+            placement_bonus = sum([in_title, in_h1, in_first])  # 0, 1, 2, or 3
+            kw_score = 70 + (placement_bonus * 10)  # 70, 80, 90, or 100
+        elif density < KW_MIN:
+            kw_score = 25
+        else:
+            kw_score = 40  # too high density
+
         checks["keyword"] = {
             "label": "Keyword Density",
             "keyword": keyword,
             "count": count, "density": density, "total_words": total_w,
-            "in_title": kw in text.lower(),
-            "in_h1": any(kw in h.lower() for h in h1s),
-            "in_first_paragraph": kw in fp.get_text().lower() if fp else False,
+            "in_title": in_title,
+            "in_h1": in_h1,
+            "in_first_paragraph": in_first,
             "passed": passed,
-            "score": 100 if passed else (0 if count == 0 else (40 if density < KW_MIN else 60)),
+            "score": kw_score,
             "recommendation": (
-                f'Keyword "{keyword}" not found. Add it naturally.' if not count
+                f'Keyword "{keyword}" not found on this page.' if not count
                 else f"Density too low ({density}%). Aim for {KW_MIN}–{KW_MAX}%." if density < KW_MIN
                 else f"Density too high ({density}%). Reduce to avoid over-optimization." if density > KW_MAX
-                else f"Keyword density is ideal at {density}%."
+                else f"Keyword density is ideal at {density}%. Found in: " + ", ".join(
+                    p for p, v in [("title", in_title), ("H1", in_h1), ("first paragraph", in_first)] if v
+                ) or "body only."
             ),
         }
     else:
         checks["keyword"] = {
-            "label": "Keyword Density", "passed": None, "score": None,
-            "recommendation": "No keyword provided. Enter a target keyword for density analysis.",
-        }
+                    "label": "Keyword Density", "passed": None, "score": None,
+                    "recommendation": "No keyword provided. Enter a target keyword for density analysis.",
+                }
 
     # 5 ── Word Count ──────────────────────────────────────────────────────────
     for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
