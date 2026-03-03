@@ -1,16 +1,20 @@
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
+import os
+from dotenv import load_dotenv
 
-from routes.analyze import router as analyze_router
-from routes.compare import router as compare_router
+load_dotenv(override=True)
 
-load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    key = os.getenv("GROQ_API_KEY")
+    if key:
+        print(f"✅ GROQ_API_KEY loaded: {key[:8]}...")
+    else:
+        print("⚠️  WARNING: GROQ_API_KEY not found!")
     print("🚀 SEOlens API starting up...")
     yield
     print("🛑 SEOlens API shutting down...")
@@ -18,20 +22,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="SEOlens API",
-    description="Corporate-grade SEO Content Analyzer powered by Python + FastAPI + Groq AI",
     version="2.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
 )
 
+# ── CORS — must be added BEFORE any routes ──
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from routes.analyze import router as analyze_router
+from routes.compare import router as compare_router
 
 app.include_router(analyze_router, prefix="/api/analyze", tags=["Analysis"])
 app.include_router(compare_router, prefix="/api/compare", tags=["Compare"])
@@ -39,7 +44,7 @@ app.include_router(compare_router, prefix="/api/compare", tags=["Compare"])
 
 @app.get("/health", tags=["Health"])
 async def health():
-    return {"status": "ok", "service": "SEOlens API v2.0", "framework": "FastAPI + Python"}
+    return {"status": "ok", "service": "SEOlens API v2.0"}
 
 
 if __name__ == "__main__":
